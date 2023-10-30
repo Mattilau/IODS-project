@@ -10,9 +10,6 @@ https://github.com/Mattilau/IODS-project
 
 
 ```{r}
-# Load the library
-library(lubridate)
-
 target_date <- ymd_hms("2023-12-11 15:45:00")
 
 current_datetime <- Sys.time()
