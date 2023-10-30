@@ -3,6 +3,8 @@
 ##Random Notes
 I stumbled upon this course in an email that listed various phd-courses and found it useful! I did use R in one project some years ago, but I really have to refresh my memory before I get back to speed with that. 
 Even though I don't use R or Github currently in my phd project, I am certain that both tools will become very handy (probably essential) in the future projects. 
+A link to my Github Repository:
+https://github.com/Mattilau/IODS-project
 
 
 ```{r}
