@@ -10,4 +10,107 @@
 date()
 ```
 
-Here we go again...
+In this exercise, we analyze data obtained from a questionnare related to learning approaches and student achievements.The data was collected in a statistics course in Fall 2014.
+
+
+```{r}
+students2014<- read.csv("data/learning2014.csv", header = TRUE, sep = ",")
+str(students2014)
+dim(students2014)
+```
+Our data has 166 observations for each 7 variables: Gender, age, attitude, points, deep, stra and surf.  While gender and age are self-explanatory, here is some information about the rest of the variables:
+Attitude: General attitude towards statistics. Is a mean of 10 separate questions.
+
+Deep: A combination variable of three question sets: 4 questions related to "seeking meaning", 4 questions related to "relating ideas", and 4 questions related to #use of evidence".
+
+Stra: A combination variable of 8 questions related to time management and organized studying, in other words "how strategic is the learning approach of the student"
+
+Surf: A combination variable of 12 questions related to "surface approach", i.e., how shallow is the learning approach of the student.
+
+Points: Points for the course exam.
+
+Let us next present some graphs of the data:
+
+```{r}
+hist(students2014$Age, main="Age distribution", xlab="Age")
+barplot(table(students2014$gender), main="Gender distribution", xlab="Gender", ylab="Frequency")
+pairs(students2014[, c("Age", "Attitude", "deep", "stra", "surf", "Points")])
+```
+
+As expected, our dataset consists mostly of young participants (20-30 yr), as the data was collected from an university course. The number of female respondents is considerably higher than the number of male respondents. A quick representation of all datapairs does not reveal anything significant at least at first glance.
+One hypothesis would be that older people would have a more strategic approach towards learning. The datapairs perhaps reveals this kind of tendency, but it should be studied further in the next sections. Also we can see a slight tendency that strategic learners got higher points from the exam than surface learners.
+
+
+The summary of our data
+```{r}
+summary(students2014)
+```
+
+The age variation is rather large, while the median age is 22. Perhaps an interesting finding from the summary is that points for strategic learning is more spread out than  the points for surface learning. 
+
+Let us next choose three variables as explanatory variables and fit a regression model where the exam points is the target variable. I hypothesize that attitude and strategic learning has statistically significant, positive effect on the exam points, while surface learning has significant negative effect. 
+
+
+
+
+```{r}
+regressionpoints <- lm(Points ~ Attitude + stra + surf, data=students2014)
+summary(regressionpoints)
+```
+
+From the explanatory variables Attitude, stra and surf, only Attitude seems statistically significant based on a linear regression model. Let us consider a scatter plot of the variables to see whether there are any linear patterns, or whether we should try polynomial regression:
+
+```{r}
+plot(students2014$stra, students2014$Points, main="Points vs Stra", xlab="Stra", ylab="Points")
+plot(students2014$deep, students2014$Points, main=" Points vs Deep", xlab="Deep", ylab="Points")
+plot(students2014$surf, students2014$Points, main="Points vs Surf", xlab="Surf", ylab="Points")
+plot(students2014$Age, students2014$Points, main="Points vs Age", xlab="Age", ylab="Points")
+boxplot(students2014$Points ~ students2014$gender, main="Points vs gender", xlab="gender", ylab="Points")
+plot(students2014$Attitude, students2014$Points, main="Points vs Attitude", xlab="Attitude", ylab="Points")
+
+```
+
+Based on graphical presentation, it really seems that Attitude is the only variable that has a linear effect on the exam points. It is also quite clear that there are no  nonlinear dependencies. Let us try other variable constellations:
+
+```{r}
+regressionpoints <- lm(Points ~ Attitude, data=students2014)
+summary(regressionpoints)
+```
+
+Based on numerous iterations, it seems like the variables attitude is the only significant variable. p value is extremely small, implying the significance of the effect of Attitude. Given the estimate of attitude 3.5255, it implies that for each unit of increase in attitude, the points obtained from the exam increases by 3.5255, with a standard error 0.5674. 
+
+The multiple R-squared is 0.1906, which implies that around 19% of the variance in exam points can be explained by attitude. Adjusted R-square takes into account the number of variables and sample size, which decreases the effect of attitude to 18.5%. 
+
+Based on our results, the attitude towards statistics is a significant predictor of the exam results. However, it only explains 18.5% of the exam points. This suggests that there are definitely other factors as well that explain the variance in points. 
+
+Last, we do the diagnostic plots:
+```{r}
+par(mfrow = c(2, 2))  # Set up the graphics layout
+plot(regressionpoints)  # This command will produce four plots
+```
+
+Residuals vs. fitted checks the linearity and homoscedasticity assumptions of our model. as there are no clear pattern in the scattered plots, we can conclude that the linearity and homoscedasticity assumption are valid.
+
+In Q-Q residuals, we check the normality of residuals.As in, it tells essentially the difference between the predicted value and the actual value. In other words, the "error" in the predicted value of our model.  As the data points follow closely the reference line, the assumpotion is valid. 
+
+Scale-Location is used to check the homoscedasticity, similarly as in the residuals vs. fitted. Homoscedasticity imply that the variance of the data is the same all over the data. As the residuals are spread somewhat equally, this assumption holds.
+
+Residuals vs leverage shows whether there are single observations in the data that would have significantly strong influence on our analysis. It seems that the input "71" would have a higher leverage compared to the rest of the data. Overall, the majority of data should not have any major concerns.
+Let us check the input 71:
+
+```{r}
+# Assuming the data frame is named students2014 and you want row 71
+attitude_value <- students2014[71, "Attitude"]
+points_value <- students2014[71, "Points"]
+
+# Print the values
+print(paste("Attitude:", attitude_value))
+print(paste("Points:", points_value))
+
+```
+
+While the mean for attitude is 3.143, and mean for points is 22.72, it seems like the participant 71 has remarkably negative attitude towards statistics and still got excellent exam points. Luckily the majority of participants follow our model results, and as we know, the exception proves the rule. 
+
+
+
+
