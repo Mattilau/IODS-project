@@ -1,16 +1,16 @@
-# Insert chapter 2 title here
 
-*Describe the work you have done this week and summarize your learning.*
+# Exercise 2
 
-- Describe your work and results clearly. 
-- Assume the reader has an introductory course level understanding of writing and reading R code as well as statistical methods.
-- Assume the reader has no previous knowledge of your data or the more advanced methods you are using.
 
 ```{r}
 date()
 ```
 
-In this exercise, we analyze data obtained from a questionnare related to learning approaches and student achievements.The data was collected in a statistics course in Fall 2014.
+In this exercise, I analyze data obtained from a questionnare related to learning approaches and student achievements.The data was collected in a statistics course in Fall 2014.
+
+I first go through the basic information about the dataset. Next, I try to find statistically significant variables that would explaine the exam points of the students. Even though in the exercise it says that you should use 3 explanatory variables, I could only find one variable that is statistically significant, which is "attitude towards statistics". At least the result is not counter-intuitive, as it is clearly shown in the data that positive attitude towards statistics will yield more point from the exam.
+
+I ended up using a linear regression model, and it does not look like there would be a better fit with more advanced models (polynomial for example). The students attitude towards statistics explains around 19% of the total exam points obtained. That is not very high, which implies that other factors surely affect the exam points. 
 
 
 ```{r}

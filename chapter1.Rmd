@@ -1,6 +1,5 @@
 
 # About the project
-## Random Notes
 
 I stumbled upon this course in an email that listed various phd-courses and found it useful! I did use R in one project some years ago, but I really have to refresh my memory before I get back to speed with that. 
 Even though I don't use R or Github currently in my phd project, I am certain that both tools will become very handy (probably essential) in the future projects. 
@@ -10,14 +9,7 @@ https://github.com/Mattilau/IODS-project
 
 
 ```{r}
-target_date <- ymd_hms("2023-12-11 15:45:00")
-
-current_datetime <- Sys.time()
-
-time_diff_seconds <- as.numeric(difftime(target_date, current_datetime, units = "secs"))
-
-cat("Seconds for the course final on 11.12.2023: ",
-    time_diff_seconds, " seconds.")
+date()
 ```
 Exercise 1  file feels definitely a practical approach to introduce oneself to R. Personally I am looking forward to more technical exercises, as I feel that the syntax is easiest to grasp when you really have to work on a specific problem. 
 I'm curious that what is the role of the Personal Access Token? Couldn't I upload my work to github without it? 
