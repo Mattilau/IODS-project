@@ -1,0 +1,214 @@
+# Exercise 4
+```{r}
+date()
+```
+
+First, I need to load the "Boston" data from the MASS package: (And apparently I have to excplicitly set the CRAN mirror, otherwise knitting does not work)
+```{r}
+options(repos = c(CRAN = "https://cran.rstudio.com"))
+install.packages("MASS")  
+library(MASS) 
+```
+
+
+Loading the Boston dataset and exploring the structure:
+```{r}
+data(Boston)
+str (Boston)
+dim(Boston)
+```
+The Boston dataset shows the housing values in different suburbs of Boston. The dataframe has a total of 506 observations of 14 variables. I explain the variables below:
+crim: per capita crime rate by town
+zn: proportion of residential land zoned for lots over 25,000 sq.ft.
+indus: proportion of non-retail business acres per town.
+chas: Charles River dummy variable (= 1 if tract bounds river; 0 otherwise).
+nox: nitrogen oxides concentration (parts per 10 million).
+rm: average number of rooms per dwelling.
+age: proportion of owner-occupied units built prior to 1940.
+dis: weighted mean of distances to five Boston employment centres.
+rad: index of accessibility to radial highways.
+tax: full-value property-tax rate per $10,000.
+ptratio: pupil-teacher ratio by town.
+black: the proporotion of blacks by town
+lstat: lower status of the population (percent).
+medv: median value of owner-occupied homes in $1000s.
+
+**Next, let us examine the data and try to figure out what is going on here:**
+```{r}
+summary(Boston)
+```
+
+Here we have all the observations of all variables summarized. The median crime rate seems to be very low compare to the max (0.25 vs. 88.9), which implies that there is some suburbs with extremely large crime rate compared to the rest. It is important to note that the "chas" is a dummy variable that is either 1 if the tract is next to the Charles River and 0 otherwise. The median value of homes has also a large variance, which is of course expected. 
+
+**Let us next visualize the data graphically:**
+```{r}
+# Histogram for per capita crime rate by town
+hist(Boston$crim, main="Histogram of Crime Rate", xlab="Per Capita Crime Rate by Town")
+
+# Histogram for proportion of residential land zoned for lots over 25,000 sq.ft.
+hist(Boston$zn, main="Histogram of Residential Land Zoned", xlab="Proportion of Residential Land Zoned for Lots Over 25,000 sq.ft.")
+
+# Histogram for proportion of non-retail business acres per town
+hist(Boston$indus, main="Histogram of Non-Retail Business Acres", xlab="Proportion of Non-Retail Business Acres per Town")
+
+# Histogram for Charles River dummy variable
+hist(Boston$chas, main="Histogram of Charles River Dummy Variable", xlab="Charles River Dummy Variable (1 if Tract Bounds River, 0 Otherwise)")
+
+# Histogram for nitrogen oxides concentration
+hist(Boston$nox, main="Histogram of Nitrogen Oxides Concentration", xlab="Nitrogen Oxides Concentration (parts per 10 million)")
+
+# Histogram for average number of rooms per dwelling
+hist(Boston$rm, main="Histogram of Average Number of Rooms", xlab="Average Number of Rooms per Dwelling")
+
+# Histogram for proportion of owner-occupied units built prior to 1940
+hist(Boston$age, main="Histogram of Age of Owner-Occupied Units", xlab="Proportion of Owner-Occupied Units Built Prior to 1940")
+
+# Histogram for weighted mean of distances to five Boston employment centres
+hist(Boston$dis, main="Histogram of Weighted Distances to Employment Centres", xlab="Weighted Mean of Distances to Five Boston Employment Centres")
+
+# Histogram for index of accessibility to radial highways
+hist(Boston$rad, main="Histogram of Accessibility to Highways", xlab="Index of Accessibility to Radial Highways")
+
+# Histogram for full-value property-tax rate per $10,000
+hist(Boston$tax, main="Histogram of Property-Tax Rate", xlab="Full-Value Property-Tax Rate per $10,000")
+
+# Histogram for pupil-teacher ratio by town
+hist(Boston$ptratio, main="Histogram of Pupil-Teacher Ratio", xlab="Pupil-Teacher Ratio by Town")
+
+# Histogram for the proportion of blacks by town
+hist(Boston$black, main="Histogram of Proportion of Blacks by Town", xlab="Proportion of Blacks by Town")
+
+# Histogram for lower status of the population
+hist(Boston$lstat, main="Histogram of Lower Status of the Population", xlab="Lower Status of the Population (percent)")
+
+# Histogram for median value of owner-occupied homes in $1000s
+hist(Boston$medv, main="Histogram of Median Value of Owner-Occupied Homes", xlab="Median Value of Owner-Occupied Homes in $1000s")
+
+```
+
+It seems like crime rates, The proportion of residential land zoned and the proprtion of blacks in the population are variables that are distributed very unevenly. Let us analyze some correlations of the variables:
+
+```{r}
+plot(Boston$crim, Boston$medv, main="Crime Rate vs Median Value of Homes", xlab="Per Capita Crime Rate by Town", ylab="Median Value of Owner-Occupied Homes in $1000s")
+plot(Boston$crim, Boston$zn, main="Crime Rate vs Proportion of residential land zoned for lots over 25,000 sq.ft.", xlab="Per Capita Crime Rate by Town", ylab="Proportion of residential land")
+plot(Boston$crim, Boston$black, main="Crime Rate vs blacks", xlab="Per Capita Crime Rate by Town", ylab="blacks")
+
+
+```
+
+By comparing a few different variables, we see that the low crime rate seems to correlate with the median value of homes and with the proportion of large residential plots. This is intuitive, as cheaper areas tend to have higher crime rate. In addition, a low proportion of large residential plots suggests that the area is more urban, which also intuitively correlates with a higher crime rates. The proportion of blacks in the population does not seem to have any correlation with the crime rates.
+
+**Next, let us standardize the dataset**
+```{r}
+Boston_scaled <- scale(Boston)
+Boston_scaled <- as.data.frame(Boston_scaled)
+summary(Boston_scaled)
+```
+
+In the standardized dataset, the mean of each variable should be very close to 0, which seems correct by our summary. This also implies that the standard deviation of each variable should be close to 1.
+
+**Next,We do the following:  Create a categorical variable of the crime rate in the Boston dataset (from the scaled crime rate). Use the quantiles as the break points in the categorical variable. Drop the old crime rate variable from the dataset. Divide the dataset to train and test sets, so that 80% of the data belongs to the train set.**
+
+```{r}
+crime_quantiles <- quantile(Boston_scaled[, "crim"])
+Boston_scaled$crime_cat <- cut(Boston_scaled[, "crim"], breaks = crime_quantiles, include.lowest = TRUE, labels = FALSE)
+
+# Drop the old crime rate variable
+Boston_scaled$crim <- NULL
+
+install.packages("caTools")
+library(caTools)
+
+# Splitting the dataset into train and test sets
+set.seed(123)  # Setting seed for reproducibility
+split <- sample.split(Boston_scaled, SplitRatio = 0.8)  # Splitting
+train_set <- subset(Boston_scaled, split == TRUE)  # 80% for training
+test_set <- subset(Boston_scaled, split == FALSE)  # 20% for testing
+```
+
+Now we have created the test set and the train set. 
+**NExt, we fit the linear discriminant analysis on the train set:**
+```{r}
+lda_model <- lda(crime_cat ~ ., data = train_set)
+print(lda_model)
+
+```
+
+**...And continue by drawing the LDA (bi)plot:**
+```{r}
+# Extract the scores (LD1 and LD2)
+lda_scores <- predict(lda_model)$x
+
+# Create a biplot
+plot(lda_scores[,1], lda_scores[,2], col=train_set$crime_cat, 
+     xlab="LD1", ylab="LD2", main="LDA Biplot")
+legend("topright", legend=levels(factor(train_set$crime_cat)), 
+       col=1:length(levels(factor(train_set$crime_cat))), pch=1)
+
+```
+In our biplot, each point represents an observation from our training set. The color of each point corresponds to the category of crime rate.
+LD1 and LD2 are the first two linear discriminants.
+
+**Next step: Save the crime categories from the test set and then remove the categorical crime variable from the test dataset. Then predict the classes with the LDA model on the test data. Cross tabulate the results with the crime categories from the test set. Comment on the results.**
+
+```{r}
+# Save the crime categories from the test set
+actual_crime_categories <- test_set$crime_cat
+
+# Remove the categorical crime variable from the test dataset
+test_set$crime_cat <- NULL
+
+# Predict the classes with the LDA model on the test data
+predicted_crime_categories <- predict(lda_model, newdata = test_set)$class
+
+# Cross-tabulate the results
+confusion_matrix <- table(Predicted = predicted_crime_categories, Actual = actual_crime_categories)
+
+# Print the confusion matrix
+print(confusion_matrix)
+```
+
+In our cross-tabulation matrix, each row represent the predicted categories of crime rate of our LDA model, while each column represents the actual categories of crime rate from the test set. The diagonal values show the correct predictions for each category. 
+Overall, it seems that quite a substantial number or categories was predicted correctly. Our model seems to perform best in distinguishing the category 4, while in category 1 the was quite a severe number of misclassifications. The category four represents the highest quantile of the crime rates. As there was a clear division between suburbs with low crime rates and suburbs with extremely high crime rates, this makes sense. It seems that there are several predictors that point towards the high crime rate, which makes it easy to predict.
+
+**Next: Reload the Boston dataset and standardize the dataset. Calculate the distances between the observations. Run k-means algorithm on the dataset. Investigate what is the optimal number of clusters and run the algorithm again. Visualize the clusters (for example with the pairs() or ggpairs() functions, where the clusters are separated with colors) and interpret the results**
+
+```{r}
+library(MASS)  # Load the MASS package for the Boston dataset
+data("Boston")  # Load the Boston dataset
+
+# Standardize the dataset
+Boston_scaled <- scale(Boston)
+# Calculate the distances between observations
+distances <- dist(Boston_scaled)
+# Set a seed for reproducibility
+set.seed(123)
+
+# Run the k-means algorithm with an arbitrary number of clusters, e.g., 3
+initial_kmeans <- kmeans(Boston_scaled, centers = 3, nstart = 25)
+
+# We find the optimal number of clusters by the "elbow" method
+
+wss <- (nrow(Boston_scaled)-1)*sum(apply(Boston_scaled,2,var))
+for (i in 2:15) wss[i] <- sum(kmeans(Boston_scaled, centers=i)$withinss)
+
+plot(1:15, wss, type="b", xlab="Number of Clusters", ylab="Within groups sum of squares")
+
+
+
+```
+
+In the elbow method, we want to choose the number of clusters where the rate of decrease sharply changes. Beyond this point, adding more clusters would not change the results that much. While we dont have very clear "elbow" in the picture, I will choose 8 clusters, after which the decrease is significantly lower.
+
+Let us run the algorithm again with optimal number of clusters an visualize them:
+
+```{r}
+optimal_kmeans <- kmeans(Boston_scaled, centers = 8, nstart = 25)
+
+pairs(Boston_scaled, col = optimal_kmeans$cluster)
+
+```
+
+OKay, the pairs() function looks absolutely horrible. The colors in the graph should be pointing towards each of the category. I literally cannot see any correlations in the pairs function because the picture is so bad. There most like would be a better way of doing this, but I'm out of ideas. 
+
+
