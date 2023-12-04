@@ -1,0 +1,149 @@
+# Exercise 5
+
+```{r}
+date()
+```
+
+In this exercise, we analyse the data from UN which examines the Human Development Index (HDI), an index that assess the development of countries beyond the sole GDP growth.
+
+```{r}
+library(readr)
+human <- read_csv("data/human.csv",show_col_types = FALSE)
+```
+
+First, we change the row numbers to country names:
+
+```{r}
+ Human_new <- human[,-1]
+rownames(Human_new) <- human$Country
+```
+Next, let us examine our data graphically:
+
+```{r}
+# Scatterplot matrix for numeric variables
+pairs(Human_new)
+```
+
+From our graphical presentation, we can see some clear correlations of the variables. Maternal mortality and adolescent birth rate are clearly decreasing in Gross National Income GNI. Also the expectancy of education decreases the maternal mortality and adolescent birth rate. Life expectancy and Education rate clearly increases in GNI. 
+
+```{r}
+summary(Human_new)
+```
+
+The variables Edu2.ratio and Labo.ratio presents the ratio of female populations vs male populations with secondary education and in labor force, respectively. We see that at minimum, there are five males with secondary education and in labor for each female. Parli is the percentage of female representatives in parliament, with a shocking minimum of 0%. 
+
+**Next, we perform the PCA analysis on the human data.** The PCA analysis is a way to reduce the dimensions of the dataset without sacrificing important information.
+
+
+```{r}
+pca_result <- prcomp(Human_new, scale. = FALSE)  # Scale. = FALSE , because our data is not standardized
+
+# Summary of PCA results
+summary(pca_result)
+
+# Variability captured by principal components
+cumulative_variability <- cumsum(pca_result$sdev^2) / sum(pca_result$sdev^2)
+
+# Plot cumulative variability
+plot(cumulative_variability, type = "b", xlab = "Principal Components", ylab = "Cumulative Variability")
+
+# Biplot
+biplot(pca_result, scale = 0, cex = 0.7)
+
+```
+
+
+It seems that the Principal Component 1 explains almost all the variability in our data. Let us check how the variables are loaded in PC1:
+
+
+
+```{r}
+loadings <- pca_result$rotation
+print(loadings[, 1:1])
+```
+
+Seems like GNI has very strong inverse relationship with PC1, implying that it strongly contributes to the variance captured by PC1.
+Next, let us standardize the Human_new data and repeat the analysis:
+
+
+```{r}
+standardized_data <- scale(Human_new)
+
+pca_result_standardized <- prcomp(standardized_data)
+
+# Summary of PCA results on standardized data
+summary(pca_result_standardized)
+
+# Variability captured by principal components on standardized data
+cumulative_variability_standardized <- cumsum(pca_result_standardized$sdev^2) / sum(pca_result_standardized$sdev^2)
+
+# Plot cumulative variability on standardized data
+plot(cumulative_variability_standardized, type = "b", xlab = "Principal Components", ylab = "Cumulative Variability")
+
+# Biplot on standardized data
+biplot(pca_result_standardized, cex = 0.7)
+
+```
+
+Now it seems based on the biplot that other variables than GNI also contributes to our data variance. Let us create some graphs to compare the two results:
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+# Perform PCA on non-standardized data
+pca_result_non_standardized <- prcomp(Human_new, scale. = FALSE)
+
+# Perform PCA on standardized data
+standardized_data <- scale(Human_new)
+pca_result_standardized <- prcomp(standardized_data)
+
+# Create side-by-side biplots
+par(mfrow = c(1, 2))
+
+# Biplots for non-standardized data
+biplot(pca_result_non_standardized, cex = 0.7, main = "PCA - Non-Standardized Data")
+text(pca_result_non_standardized$rotation, labels = colnames(Human_new), col = "red", cex = 0.8, pos = 3)
+
+# Biplots for standardized data
+biplot(pca_result_standardized, cex = 0.7, main = "PCA - Standardized Data")
+text(pca_result_standardized$rotation, labels = colnames(Human_new), col = "red", cex = 0.8, pos = 3)
+
+
+```
+
+
+Clearly, looking back to the summary of our dataset, the GNI observations are so large that it overrules all other variables when the data is not standardized. Here we have a wonderful example of how important it is to standardize the dataset in order to be able to really compare the variables and their effects.
+
+In the biplot created with the standardized dataset, we can see that the variables "parli" and "labo.ratio" share the vector length and direction. This is intuitive: higher number of female in the workforce correlated with a higher percentage of female in the parliament. Also life expectancy, education expectancy and the ratio of female with at least secondary education correlate. 
+
+**Now, we jump to a TEA data!**
+
+
+
+
+```{r}
+tea <- read.csv("https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open-Data-Science/master/datasets/tea.csv", stringsAsFactors = TRUE)
+tea$age <- as.factor(tea$age)
+View(tea)
+```
+
+In tea data we have a questionnare of 300 individuals that were asked how they drink their tea. I changed the "age" variable to a factor variable.
+Let us perform a MCA analysis on the tea data:
+
+```{r}
+install.packages("FactoMineR")
+
+library(FactoMineR)
+
+
+mca_result <- MCA(tea)
+
+summary(mca_result)
+```
+
+MCA is an extension of Principal Component Analysis (PCA) designed for categorical variables. We can see that the strongest factors affecting to our results are age and SPC, which tells the work rank of the repondent. Other variables conrtibuting to the variance are the place where tea is enjoyed, the brand, sex, and whether friends drink tea or not.
+
+
+
+
