@@ -1,0 +1,55 @@
+# Exercise 6
+
+
+```{r}
+date()
+```
+
+In the first part of the exercise 6, we study some data from a nutrition study conducted in three groups of rats (Crowder and Hand, 1990). The three groups were put on different diets, and each animal’s body weight (grams) was recorded repeatedly (approximately weekly, except in week seven when two recordings were taken) over a 9-week period. 
+
+```{r}
+library(tidyr); library(dplyr); library(ggplot2)
+library(readr)
+RATSL <- read_csv("data/RATSL.csv")
+RATSL$Group <- factor(RATSL$Group)
+RATSL$ID <- factor(RATSL$ID)
+glimpse(RATSL)
+head(RATSL)
+tail(RATSL)
+```
+
+**Let us begin our analysis by plotting the weight development of each individual differentiated by their diet groups:**
+
+
+```{r}
+p1 <- ggplot(RATSL, aes(x = Time, y = Weight, linetype = ID))
+p2 <- p1 + geom_line() + scale_linetype_manual(values = rep(1:10, times=4))
+p3 <- p2 + facet_grid(. ~ Group, labeller = label_both)
+p4 <- p3 + theme_bw() + theme(legend.position = "none")
+p5 <- p4 + theme(panel.grid.minor.y = element_blank())
+p6 <- p5 + scale_y_continuous(limits = c(min(RATSL$Weight), max(RATSL$Weight)))
+p6
+```
+
+Next, let us standardize the data so that the initial weight does not skew the results:
+
+
+```{r}
+# Standardise the scores:
+RATSL <- RATSL %>%
+  group_by(Time) %>%
+  mutate( stdweight = (Weight - mean(Weight))/sd(Weight) ) %>%
+  ungroup()
+glimpse(RATSL)
+
+p1 <- ggplot(RATSL, aes(x = Time, y = stdweight, linetype = ID))
+p2 <- p1 + geom_line() + scale_linetype_manual(values = rep(1:10, times=4))
+p3 <- p2 + facet_grid(. ~ Group, labeller = label_both)
+p4 <- p3 + theme_bw() + theme(legend.position = "none")
+p5 <- p4 + theme(panel.grid.minor.y = element_blank())
+p6 <- p5 + scale_y_continuous(name = "standardized weight")
+p6
+```
+
+Here are the standardized datapoints graphed. Now I have to stop and focus on my 32-hours old, first-born baby. Thank you for the course!
+

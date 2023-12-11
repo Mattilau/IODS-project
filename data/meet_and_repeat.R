@@ -27,7 +27,11 @@ RATSL <- gather(RATS, key = WD, value = Weight, -ID, -Group) %>%
 #Instead of having a single row for each subject, we have now a single row for each observation.
 str(RATSL)
 str(BPRSL)
+#Let us save the data in our data folder:
+library(readr)
+write_csv(RATSL, "data/RATSL.csv")
 
+write_csv(BPRSL, "data/BPRSL.csv")
 
 
 
